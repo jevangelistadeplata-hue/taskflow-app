@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('tareas', function (Blueprint $table) {
             $table->id();
+            $table->string('titulo');
+            $table->text('descripcion')->nullable();
+            $table->enum('estado', ['pendiente', 'en_progreso', 'completada'])->default('pendiente');
+            $table->date('fecha_limite')->nullable();
             $table->timestamps();
         });
     }
