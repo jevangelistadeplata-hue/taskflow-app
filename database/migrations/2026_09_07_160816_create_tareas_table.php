@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('titulo');
             $table->text('descripcion')->nullable();
-            $table->enum('estado', ['pendiente', 'en_progreso', 'completada'])->default('pendiente');
+            $table->enum('estado', ['pendiente', 'completada'])->default('pendiente');
             $table->date('fecha_limite')->nullable();
             $table->timestamps();
+            $table->softDeletes(); // Columna 'deleted_at' para auditoría
         });
     }
 
