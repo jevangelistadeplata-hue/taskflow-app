@@ -1,19 +1,35 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\DashboardController;
 
-/*
-|--------------------------------------------------------------------------
-| Rutas principales
-|--------------------------------------------------------------------------
-*/
 
 /*
 |--------------------------------------------------------------------------
-| Rutas protegidas por autenticación
+| Página de entrada
 |--------------------------------------------------------------------------
+|
+| La página "/" será controlada por HomeController.
+|
+| Usuario NO autenticado → Login
+| Usuario autenticado → Dashboard
+|
+*/
+
+Route::get('/', [HomeController::class, 'index'])
+    ->name('home');
+
+
+/*
+|--------------------------------------------------------------------------
+| Rutas protegidas
+|--------------------------------------------------------------------------
+|
+| Estas rutas solamente pueden ser utilizadas
+| por usuarios autenticados.
+|
 */
 
 Route::middleware('auth')->group(function () {
@@ -24,19 +40,30 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/', [DashboardController::class, 'index'])
+    Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
+
 
     /*
     |--------------------------------------------------------------------------
-    | Rutas de tareas
+    | Cambiar estado de una tarea
     |--------------------------------------------------------------------------
     */
 
-    // Cambiar rápidamente el estado de una tarea
     Route::patch('/tareas/{tarea}/toggle', [TareaController::class, 'toggleStatus'])
         ->name('tareas.toggle');
 
-    // CRUD completo de tareas
-    Route::resource('/tareas', TareaController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gestión de tareas
+    |--------------------------------------------------------------------------
+    |
+    | Se excluye "show" porque TareaController no tiene
+    | un método show().
+    |
+    */
+
+    Route::resource('/tareas', TareaController::class)
+        ->except(['show']);
 });

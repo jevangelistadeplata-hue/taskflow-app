@@ -7,18 +7,19 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Ejecutar la migración.
      */
     public function up(): void
     {
         Schema::table('tareas', function (Blueprint $table) {
-            // Relación entre la tarea y el usuario autenticado
-            $table->foreignId('user_id')
-                ->after('id')
-                ->constrained('users')
-                ->cascadeOnDelete();
 
-            // Prioridad de la tarea: 1 = Baja, 2 = Media, 3 = Alta
+            // La columna user_id ya existe en la tabla.
+            // Solo agregamos las columnas que realmente faltan.
+
+            // Prioridad:
+            // 1 = Baja
+            // 2 = Media
+            // 3 = Alta
             $table->unsignedTinyInteger('prioridad')
                 ->after('fecha_limite')
                 ->default(2);
@@ -28,19 +29,20 @@ return new class extends Migration
                 'Trabajo',
                 'Estudio',
                 'Personal'
-            ])->after('prioridad');
+            ])
+            ->after('prioridad')
+            ->default('Personal');
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Revertir la migración.
      */
     public function down(): void
     {
         Schema::table('tareas', function (Blueprint $table) {
-            $table->dropForeign(['user_id']);
+
             $table->dropColumn([
-                'user_id',
                 'prioridad',
                 'categoria',
             ]);

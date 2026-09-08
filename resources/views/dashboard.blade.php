@@ -2,9 +2,7 @@
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Dashboard - TaskFlow</title>
@@ -12,11 +10,115 @@
     <!-- Bootstrap 4 -->
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-
 </head>
 
 <body class="bg-dark">
 
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary shadow">
+
+        <div class="container">
+
+            <!-- Nombre de la aplicación -->
+            <a class="navbar-brand font-weight-bold"
+               href="{{ route('dashboard') }}">
+                TaskFlow
+            </a>
+
+            <!-- Botón responsive -->
+            <button class="navbar-toggler"
+                    type="button"
+                    data-toggle="collapse"
+                    data-target="#navbarTaskFlow"
+                    aria-controls="navbarTaskFlow"
+                    aria-expanded="false"
+                    aria-label="Mostrar navegación">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse"
+                 id="navbarTaskFlow">
+
+                <!-- Menú principal -->
+                <ul class="navbar-nav mr-auto">
+
+                    <li class="nav-item active">
+                        <a class="nav-link"
+                           href="{{ route('dashboard') }}">
+                            Dashboard
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           href="{{ route('tareas.index') }}">
+                            Tareas
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           href="{{ route('tareas.create') }}">
+                            Nueva Tarea
+                        </a>
+                    </li>
+
+                </ul>
+
+                <!-- Usuario autenticado -->
+                <ul class="navbar-nav">
+
+                    <li class="nav-item dropdown">
+
+                        <a class="nav-link dropdown-toggle"
+                           href="#"
+                           id="usuarioMenu"
+                           role="button"
+                           data-toggle="dropdown"
+                           aria-haspopup="true"
+                           aria-expanded="false">
+
+                            {{ Auth::user()->name }}
+
+                        </a>
+
+                        <div class="dropdown-menu dropdown-menu-right"
+                             aria-labelledby="usuarioMenu">
+
+                            <div class="dropdown-item-text">
+                                <strong>Usuario:</strong><br>
+                                {{ Auth::user()->name }}
+                            </div>
+
+                            <div class="dropdown-divider"></div>
+
+                            <!-- Cerrar sesión -->
+                            <form method="POST"
+                                  action="{{ route('logout') }}">
+
+                                @csrf
+
+                                <button type="submit"
+                                        class="dropdown-item text-danger">
+                                    Cerrar sesión
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+    <!-- Contenido principal -->
     <div class="container mt-5 mb-5">
 
         <!-- Encabezado -->
@@ -33,16 +135,15 @@
                         </h1>
 
                         <p class="text-muted mb-0">
-                            Resumen general y métricas del sistema
+                            Bienvenido, {{ Auth::user()->name }}.
+                            Resumen general y métricas del sistema.
                         </p>
 
                     </div>
 
                     <a href="{{ route('tareas.index') }}"
                        class="btn btn-primary">
-
                         Ir a Lista de Tareas →
-
                     </a>
 
                 </div>
@@ -185,9 +286,7 @@
                                 <tr>
 
                                     <td class="font-weight-bold">
-
                                         {{ $tarea->titulo }}
-
                                     </td>
 
                                     <td>
@@ -209,9 +308,7 @@
                                     </td>
 
                                     <td>
-
                                         {{ $tarea->fecha_limite ?? 'Sin fecha' }}
-
                                     </td>
 
                                 </tr>
@@ -243,7 +340,12 @@
 
     </div>
 
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 
 </html>
-
