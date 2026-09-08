@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CategoriaController;
 
 
 /*
@@ -66,4 +67,19 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('/tareas', TareaController::class)
         ->except(['show']);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gestión de categorías
+    |--------------------------------------------------------------------------
+    |
+    | Se excluye "show" porque CategoriaController no tiene
+    | un método show().
+    |
+    */
+
+    Route::resource('/categorias', CategoriaController::class)
+        ->except(['show']);
+
 });

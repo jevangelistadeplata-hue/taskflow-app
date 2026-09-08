@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Categoria;
 use App\Models\Tarea;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +16,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * Campos que se pueden asignar masivamente.
+     * Campos que pueden ser asignados mediante Eloquent.
      */
     protected $fillable = [
         'name',
@@ -24,7 +25,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Campos que no deben mostrarse.
+     * Campos ocultos.
      */
     protected $hidden = [
         'password',
@@ -32,7 +33,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Conversión de tipos.
+     * Conversión de atributos.
      */
     protected function casts(): array
     {
@@ -43,10 +44,20 @@ class User extends Authenticatable
     }
 
     /**
+     * Relación:
      * Un usuario puede tener muchas tareas.
      */
     public function tareas(): HasMany
     {
         return $this->hasMany(Tarea::class);
+    }
+
+    /**
+     * Relación:
+     * Un usuario puede tener muchas categorías.
+     */
+    public function categorias(): HasMany
+    {
+        return $this->hasMany(Categoria::class);
     }
 }

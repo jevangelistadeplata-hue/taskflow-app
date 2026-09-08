@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Categoria;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -21,11 +22,13 @@ class Tarea extends Model
         'estado',
         'fecha_limite',
         'prioridad',
+        'categoria_id',
         'categoria',
     ];
 
     /**
-     * Estado predeterminado de una nueva tarea.
+     * Estado y prioridad predeterminados
+     * de una nueva tarea.
      */
     protected $attributes = [
         'estado' => 'pendiente',
@@ -49,5 +52,13 @@ class Tarea extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Una tarea pertenece a una categoría.
+     */
+    public function categoriaRelacion(): BelongsTo
+    {
+        return $this->belongsTo(Categoria::class, 'categoria_id');
     }
 }

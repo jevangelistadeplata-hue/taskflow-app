@@ -19,35 +19,44 @@ class TareaController extends Controller
 
         $consulta = $usuario->tareas();
 
-        // Búsqueda por título o descripción
+        // Búsqueda por título o descripción.
         if ($request->filled('buscar')) {
             $buscar = $request->buscar;
 
             $consulta->where(function ($query) use ($buscar) {
                 $query->where('titulo', 'like', '%' . $buscar . '%')
-                      ->orWhere('descripcion', 'like', '%' . $buscar . '%');
+                    ->orWhere('descripcion', 'like', '%' . $buscar . '%');
             });
         }
 
-        // Filtro por estado
+        // Filtro por estado.
         if ($request->filled('estado')) {
             $consulta->where('estado', $request->estado);
         }
 
-        // Filtro por categoría
-        if ($request->filled('categoria')) {
-            $consulta->where('categoria', $request->categoria);
+        // Filtro por categoría.
+        if ($request->filled('categoria_id')) {
+            $consulta->where('categoria_id', $request->categoria_id);
         }
 
-        // Filtro por prioridad
+        // Filtro por prioridad.
         if ($request->filled('prioridad')) {
             $consulta->where('prioridad', $request->prioridad);
         }
 
-        // Obtener tareas
-        $tareas = $consulta->latest()->get();
+        // Obtener tareas con su categoría.
+        $tareas = $consulta
+            ->with('categoriaRelacion')
+            ->latest()
+            ->get();
 
-        // Estadísticas del usuario autenticado
+        // Categorías del usuario autenticado.
+        $categorias = $usuario
+            ->categorias()
+            ->orderBy('nombre')
+            ->get();
+
+        // Estadísticas del usuario autenticado.
         $tareasUsuario = $usuario->tareas();
 
         $totalTareas = (clone $tareasUsuario)->count();
@@ -74,6 +83,7 @@ class TareaController extends Controller
 
         return view('tareas.index', compact(
             'tareas',
+            'categorias',
             'totalTareas',
             'pendientes',
             'completadas',
@@ -88,7 +98,15 @@ class TareaController extends Controller
      */
     public function create()
     {
-        return view('tareas.create');
+        /** @var User $usuario */
+        $usuario = Auth::user();
+
+        $categorias = $usuario
+            ->categorias()
+            ->orderBy('nombre')
+            ->get();
+
+        return view('tareas.create', compact('categorias'));
     }
 
     /**
@@ -101,7 +119,7 @@ class TareaController extends Controller
             'descripcion' => 'nullable|string',
             'fecha_limite' => 'required|date',
             'prioridad' => 'required|integer|in:1,2,3',
-            'categoria' => 'required|in:Trabajo,Estudio,Personal',
+            'categoria_id' => 'required|integer|exists:categorias,id',
         ], [
             'titulo.required' => 'El título de la tarea es obligatorio.',
             'titulo.max' => 'El título no puede superar los 255 caracteres.',
@@ -109,19 +127,29 @@ class TareaController extends Controller
             'fecha_limite.date' => 'La fecha límite no es válida.',
             'prioridad.required' => 'Debes seleccionar una prioridad.',
             'prioridad.in' => 'La prioridad seleccionada no es válida.',
-            'categoria.required' => 'Debes seleccionar una categoría.',
-            'categoria.in' => 'La categoría seleccionada no es válida.',
+            'categoria_id.required' => 'Debes seleccionar una categoría.',
+            'categoria_id.exists' => 'La categoría seleccionada no es válida.',
         ]);
 
         /** @var User $usuario */
         $usuario = Auth::user();
 
+        // Verificar que la categoría pertenezca al usuario.
+        $categoria = $usuario
+            ->categorias()
+            ->find($request->categoria_id);
+
+        if (!$categoria) {
+            abort(403, 'No tienes permiso para utilizar esta categoría.');
+        }
+
+        // Crear la tarea utilizando la nueva relación categoria_id.
         $usuario->tareas()->create([
             'titulo' => $request->titulo,
             'descripcion' => $request->descripcion,
             'fecha_limite' => $request->fecha_limite,
             'prioridad' => $request->prioridad,
-            'categoria' => $request->categoria,
+            'categoria_id' => $categoria->id,
             'estado' => 'pendiente',
         ]);
 
@@ -137,7 +165,18 @@ class TareaController extends Controller
     {
         $this->verificarPropietario($tarea);
 
-        return view('tareas.edit', compact('tarea'));
+        /** @var User $usuario */
+        $usuario = Auth::user();
+
+        $categorias = $usuario
+            ->categorias()
+            ->orderBy('nombre')
+            ->get();
+
+        return view('tareas.edit', compact(
+            'tarea',
+            'categorias'
+        ));
     }
 
     /**
@@ -153,7 +192,7 @@ class TareaController extends Controller
             'estado' => 'required|in:pendiente,completada',
             'fecha_limite' => 'required|date',
             'prioridad' => 'required|integer|in:1,2,3',
-            'categoria' => 'required|in:Trabajo,Estudio,Personal',
+            'categoria_id' => 'required|integer|exists:categorias,id',
         ], [
             'titulo.required' => 'El título de la tarea es obligatorio.',
             'titulo.max' => 'El título no puede superar los 255 caracteres.',
@@ -161,17 +200,30 @@ class TareaController extends Controller
             'fecha_limite.date' => 'La fecha límite no es válida.',
             'prioridad.required' => 'Debes seleccionar una prioridad.',
             'prioridad.in' => 'La prioridad seleccionada no es válida.',
-            'categoria.required' => 'Debes seleccionar una categoría.',
-            'categoria.in' => 'La categoría seleccionada no es válida.',
+            'categoria_id.required' => 'Debes seleccionar una categoría.',
+            'categoria_id.exists' => 'La categoría seleccionada no es válida.',
         ]);
 
+        /** @var User $usuario */
+        $usuario = Auth::user();
+
+        // Verificar que la categoría pertenezca al usuario.
+        $categoria = $usuario
+            ->categorias()
+            ->find($request->categoria_id);
+
+        if (!$categoria) {
+            abort(403, 'No tienes permiso para utilizar esta categoría.');
+        }
+
+        // Actualizar la tarea utilizando categoria_id.
         $tarea->update([
             'titulo' => $request->titulo,
             'descripcion' => $request->descripcion,
             'estado' => $request->estado,
             'fecha_limite' => $request->fecha_limite,
             'prioridad' => $request->prioridad,
-            'categoria' => $request->categoria,
+            'categoria_id' => $categoria->id,
         ]);
 
         return redirect()
